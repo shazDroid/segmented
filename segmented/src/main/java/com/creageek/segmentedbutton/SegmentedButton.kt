@@ -23,6 +23,7 @@ import android.graphics.Typeface
 import android.graphics.drawable.*
 import android.graphics.drawable.shapes.RoundRectShape
 import android.util.AttributeSet
+import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity.CENTER
 import android.view.View
@@ -181,8 +182,33 @@ class SegmentedButton : RadioGroup, View.OnClickListener {
             val indexOf = indexOfChild(selected)
 
             if (checkedIndex == indexOf) {
-                onSegmentReselected?.invoke(selected)
+                if (selected.isChecked){
+                    selected.isSelected = false
+                    selected.isChecked = false
+                    selected.typeface = segmentFont
+                    checkedChild?.let { unselected ->
+                        unselected.typeface = segmentFont
+                        onSegmentUnselected?.invoke(unselected)
+                    }
+                    checkedChild = null
+                    checkedIndex = null
+                    Log.d("creageek:segmented", "Segment ${selected.text} was checked")
+                } else {
+                    selected.isSelected = true
+                    selected.isChecked = true
+                    selected.typeface = segmentFontChecked
+                    onSegmentSelected?.invoke(selected)
+                    checkedChild?.let { unselected ->
+                        unselected.typeface = segmentFont
+                        onSegmentUnselected?.invoke(unselected)
+                    }
+                    checkedChild = selected
+                    checkedIndex = indexOf
+                    Log.d("creageek:segmented", "Segment ${selected.text} was not checked")
+                }
             } else {
+                selected.isSelected = true
+                selected.isChecked = true
                 selected.typeface = segmentFontChecked
                 onSegmentSelected?.invoke(selected)
                 checkedChild?.let { unselected ->
@@ -191,6 +217,8 @@ class SegmentedButton : RadioGroup, View.OnClickListener {
                 }
                 checkedChild = selected
                 checkedIndex = indexOf
+                invalidate()
+                Log.d("creageek:segmented", "Segment ${selected.text} mark checked")
             }
         }
     }
